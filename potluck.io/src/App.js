@@ -1,12 +1,16 @@
 import Home from './pages/Home';
-import './App.css';
+import Bubbles from './components/Bubbles'
+import './style/App.scss';
+require('dotenv').config()
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <Home></Home>
-      </header>
+    <div className="Main">
+        <body>
+          <Home></Home>
+        </body>
+      {/* Bubbles for background animation */}
+      <Bubbles></Bubbles>
     </div>
   );
 }

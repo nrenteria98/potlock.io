@@ -1,11 +1,12 @@
-import { Button } from 'antd';
+import React, { useState } from 'react';
+import SpotifyButton from '../components/SpotifyButton';
+import '../style/Home.scss'
 
 function Home() {
+
   return (
-    <div className="App">
-      <Button>
-          Get Started.
-      </Button>
+    <div className="Home">
+      <SpotifyButton></SpotifyButton>
     </div>
   );
 }
