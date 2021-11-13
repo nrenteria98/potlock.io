@@ -1,2 +1,2 @@
-# potlock.io
+# potluck.io
 If you know you know
