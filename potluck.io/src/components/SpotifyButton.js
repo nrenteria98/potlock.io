@@ -16,35 +16,12 @@ const scopes = [
 const loginUrl = `${authEndpoint}?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scopes.join(
   "%20"
   )}&response_type=token&show_dialogue=true`;
-  
-const getReturnedParamsFromSpotifyAuth = (hash) => {
-  const stringAfterHashtag = hash.substring(1);
-  const paramsInUrl = stringAfterHashtag.split("&");
-  const paramsSplitUp = paramsInUrl.reduce((accumulator, currentValue) => {
-    const [key, value] = currentValue.split("=");
-    accumulator[key] = value;
-    return accumulator;
-  }, {});
-
-  return paramsSplitUp;
-};
 
 function SpotifyButton() {
 
   useEffect(() => {
-    if (window.location.hash) {
-      const {
-        access_token,
-        expires_in,
-        token_type,
-      } = getReturnedParamsFromSpotifyAuth(window.location.hash);
-
-      localStorage.clear();
-      localStorage.setItem("access_token", access_token);
-      localStorage.setItem("expires_in", expires_in);
-      localStorage.setItem("token_type", token_type);
-    }
-  })
+    localStorage.clear();
+  });
 
   const handleLogIn = () => {
     window.location = loginUrl
@@ -68,7 +45,6 @@ function SpotifyButton() {
         }}
         onClick={handleLogIn}>
           Welcome to Potluck!
-        
       </Button>
     </div>
   );
