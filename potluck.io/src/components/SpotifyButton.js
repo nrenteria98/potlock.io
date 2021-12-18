@@ -1,22 +1,54 @@
 import { Button } from 'antd';
+import { useEffect } from 'react';
+
+const authEndpoint = "https://accounts.spotify.com/authorize";
+const redirectUri = "http://localhost:3000/";
+const clientId = process.env.REACT_APP_SPOTIFY_CLIENT_ID
+const scopes = [
+  "user-read-currently-playing",
+  "user-read-playback-state",
+  "playlist-read-private",
+  "playlist-read-collaborative",
+  "playlist-modify-public",
+  "streaming"
+];
+
+const loginUrl = `${authEndpoint}?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scopes.join(
+  "%20"
+  )}&response_type=token&show_dialogue=true`;
+  
+const getReturnedParamsFromSpotifyAuth = (hash) => {
+  const stringAfterHashtag = hash.substring(1);
+  const paramsInUrl = stringAfterHashtag.split("&");
+  const paramsSplitUp = paramsInUrl.reduce((accumulator, currentValue) => {
+    const [key, value] = currentValue.split("=");
+    accumulator[key] = value;
+    return accumulator;
+  }, {});
+
+  return paramsSplitUp;
+};
 
 function SpotifyButton() {
 
-  const authEndpoint = "https://accounts.spotify.com/authorize";
-  const redirectUri = "https://localhost:3000/";
-  const clientId = process.env.REACT_APP_SPOTIFY_CLIENT_ID
-  const scopes = [
-    "user-read-currently-playing",
-    "user-read-playback-state",
-    "playlist-read-private",
-    "playlist-read-collaborative",
-    "playlist-modify-public",
-    "streaming"
-  ];
+  useEffect(() => {
+    if (window.location.hash) {
+      const {
+        access_token,
+        expires_in,
+        token_type,
+      } = getReturnedParamsFromSpotifyAuth(window.location.hash);
 
-  const loginUrl = `${authEndpoint}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=${scopes.join(
-    "%20"
-    )}`;
+      localStorage.clear();
+      localStorage.setItem("access_token", access_token);
+      localStorage.setItem("expires_in", expires_in);
+      localStorage.setItem("token_type", token_type);
+    }
+  })
+
+  const handleLogIn = () => {
+    window.location = loginUrl
+  };
 
   return (
     <div>
@@ -33,12 +65,13 @@ function SpotifyButton() {
           fontSize: 'x-large',
           alignContent: 'center',
           justifyContent: 'center'
-        }
-        }>
-        <a href={loginUrl} class="button">Welcome to Potluck!</a>
+        }}
+        onClick={handleLogIn}>
+          Welcome to Potluck!
+        
       </Button>
     </div>
   );
-}
+};
 
 export default SpotifyButton;
