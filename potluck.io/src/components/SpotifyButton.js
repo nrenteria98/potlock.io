@@ -2,7 +2,7 @@ import { Button } from 'antd';
 import { useEffect } from 'react';
 
 const authEndpoint = "https://accounts.spotify.com/authorize";
-const redirectUri = "http://localhost:3000/";
+const redirectUri = "http://localhost:3000/search";
 const clientId = process.env.REACT_APP_SPOTIFY_CLIENT_ID
 const scopes = [
   "user-read-currently-playing",
