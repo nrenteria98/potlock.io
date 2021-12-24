@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from 'antd';
 import axios from 'axios';
-
-const spotifyUserId = "u44czhoefczhjdeutdqg09hms"
-const PLAYLISTS_ENDPOINT = `https://api.spotify.com/v1/users/${spotifyUserId}/playlists`;
+import playlistData from '../data/playlistData';
 
 const getReturnedParamsFromSpotifyAuth = (hash) => {
     const stringAfterHashtag = hash.substring(1);
@@ -17,53 +15,89 @@ const getReturnedParamsFromSpotifyAuth = (hash) => {
     return paramsSplitUp;
   };
 
-// const parseSpotifyPlaylistResponse = (responseData) => {
-//     const playlistList = [];
-
-// }
+const parseItems = (items) => {
+    const trackList = [];
+    for (let item of items) {
+        let artistList = [];
+        for ( let artist of item.track.artists) {
+            artistList.push(artist.name);
+        };
+        let trackInfo = {
+            name: item.track.name,
+            artists: artistList
+        }
+        trackList.push(trackInfo)
+    };
+    return trackList;
+};
 
 function SpotifyGetPlaylist(props) {
     const [token, setToken] = useState('');
     const [data, setData] = useState({});
-
+    const [isLoading, setIsLoading] = useState(false);
+    
     useEffect(() => {  
         if (window.location.hash) {
             const {
-              access_token,
-              expires_in,
-              token_type,
+                access_token,
+                expires_in,
+                token_type,
             } = getReturnedParamsFromSpotifyAuth(window.location.hash);
-      
+        
             localStorage.clear();
             localStorage.setItem("accessToken", access_token);
             localStorage.setItem("expiresIn", expires_in);
             localStorage.setItem("tokenType", token_type);
-          };
-
+        };
+        
         if (localStorage.getItem("accessToken")) {    
             setToken(localStorage.getItem('accessToken'));
-        }
+        };
+
     }, []);
 
-    const getPlaylists = () => {
-        axios.get(PLAYLISTS_ENDPOINT, {
+    const recursiveNextUrl = (nextUrl, previousTrackList) => {
+        return axios.get(nextUrl, {
             headers: {
                 Authorization: "Bearer " + token,
-            },
-            params: {
-                limit: 50
             }
         })
-        .then(response => {
-            setData(response.data);
-            console.log(response.data);
-            props.displaySearchBar(true);
-            props.displaySpotifyGetPlaylist(false);
+        .then(newResponse => {
+            let newTrackList = parseItems(newResponse.data.items);
+            const response = [...previousTrackList, ...newTrackList];
 
+            let nextUrl = newResponse.data.next;
+            if (nextUrl != null) {
+                return recursiveNextUrl(nextUrl, response)
+            }
+
+            return response
         })
         .catch((error) => {
             console.log(error);
-        });
+        })
+    }
+
+    const getSongs = async () => {
+        setIsLoading(true);
+
+        const completeDataSet = {};
+
+        for (let playlist of playlistData) {
+            const PLAYLIST_ENDPOINT = `https://api.spotify.com/v1/playlists/${playlist.id}/tracks`;
+
+            await recursiveNextUrl(PLAYLIST_ENDPOINT, [])
+            .then(trackList => {
+                completeDataSet[playlist.name] = trackList;                
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+        };
+        
+        setData(completeDataSet);
+        props.displaySearchBar(true);
+        props.displaySpotifyGetPlaylist(false);
     };
 
     return (
@@ -83,7 +117,8 @@ function SpotifyGetPlaylist(props) {
                 alignContent: 'center',
                 justifyContent: 'center'
               }}
-              onClick={getPlaylists}>Start Search</Button>
+              onClick={getSongs}
+              loading={isLoading}>Start Search</Button>
         </div>
     );
 };
