@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Button } from 'antd';
 import axios from 'axios';
 
-const PLAYLISTS_ENDPOINT = "https://api.spotify.com/v1/me/playlists";
+const spotifyUserId = "u44czhoefczhjdeutdqg09hms"
+const PLAYLISTS_ENDPOINT = `https://api.spotify.com/v1/users/${spotifyUserId}/playlists`;
 
 const getReturnedParamsFromSpotifyAuth = (hash) => {
     const stringAfterHashtag = hash.substring(1);
@@ -16,7 +17,12 @@ const getReturnedParamsFromSpotifyAuth = (hash) => {
     return paramsSplitUp;
   };
 
-function SpotifyGetPlaylist() {
+// const parseSpotifyPlaylistResponse = (responseData) => {
+//     const playlistList = [];
+
+// }
+
+function SpotifyGetPlaylist(props) {
     const [token, setToken] = useState('');
     const [data, setData] = useState({});
 
@@ -44,9 +50,16 @@ function SpotifyGetPlaylist() {
             headers: {
                 Authorization: "Bearer " + token,
             },
+            params: {
+                limit: 50
+            }
         })
         .then(response => {
             setData(response.data);
+            console.log(response.data);
+            props.displaySearchBar(true);
+            props.displaySpotifyGetPlaylist(false);
+
         })
         .catch((error) => {
             console.log(error);
@@ -55,7 +68,22 @@ function SpotifyGetPlaylist() {
 
     return (
         <div>
-            <Button onClick={getPlaylists}>Hello</Button>
+            <Button 
+            shape="round"
+            style={
+              {
+                color: 'silver',
+                zIndex: 2,
+                borderColor: '#D4AF37',
+                height: '5vw',
+                width: '30vw',
+                minHeight: '50px',
+                minWidth: '250px',
+                fontSize: 'x-large',
+                alignContent: 'center',
+                justifyContent: 'center'
+              }}
+              onClick={getPlaylists}>Start Search</Button>
         </div>
     );
 };
