@@ -33,7 +33,6 @@ const parseItems = (items) => {
 
 function SpotifyGetPlaylist(props) {
     const [token, setToken] = useState('');
-    const [data, setData] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     
     useEffect(() => {  
@@ -95,7 +94,7 @@ function SpotifyGetPlaylist(props) {
             });
         };
         
-        setData(completeDataSet);
+        localStorage.setItem("data", JSON.stringify(completeDataSet));
         props.displaySearchBar(true);
         props.displaySpotifyGetPlaylist(false);
     };

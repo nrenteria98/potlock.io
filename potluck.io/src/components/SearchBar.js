@@ -1,11 +1,45 @@
 import { Button, Input, Form } from 'antd';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-function SearchBar() {
+function SearchBar(props) {
   const [form] = Form.useForm();
+  const [firstQuery, setFirstQuery] = useState(true);
 
-  const onFinish = (values) => {
-    console.log('Received values of form: ', values);
+  const completeDataSet = JSON.parse(localStorage.getItem('data'));
+
+  const filterSongs = (songQuery) => {
+    const resultsList = [];
+    
+    for ( const playlist in completeDataSet ) {
+      const songs = completeDataSet[playlist];
+      for ( const song of songs ) {
+        let songName = song.name.toLowerCase();
+        if ( songName.includes(songQuery) ) {
+          let matchObj = {
+            "playlist": playlist,
+            "song": song.name,
+            "artists": song.artists
+          };
+          
+          resultsList.push(matchObj);
+        };
+      };
+    };
+
+    return resultsList;
+  }
+
+  const onFinish = (query) => {
+    const songQuery = query.songName.toLowerCase();
+    const resultsList = filterSongs(songQuery);
+
+    props.setResults(resultsList);
+    localStorage.setItem("queryResult", JSON.stringify(resultsList));
+
+    if (firstQuery) {
+      props.displayResults(true);
+      setFirstQuery(false);
+    };
   };
 
   return (
